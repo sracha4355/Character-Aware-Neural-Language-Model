@@ -21,6 +21,9 @@ import os
 import re
 import math
 
+FILEPATH_TO_DATA_FOLDER = ""
+FILEPATH_TO_FOLDER_TO_SAVE_MODEL = ""
+
 def load_checkpoint(checkpoint_filepath, model, optimizer):
   checkpoint = torch.load(checkpoint_filepath)
   model.load_state_dict(checkpoint['model_state_dict'])
@@ -69,7 +72,7 @@ class UDTeluguDataloader(Dataset):
     self.int_to_token = {}
 
     for split in ["dev", "test", "train"]:
-      file = f'{directory_path}te_mtg-ud-{split}.conllu'
+      file = f'{FILEPATH_TO_DATA_FOLDER}/te_mtg-ud-{split}.conllu'
       content = ""
       with open(file, "r") as file:
         content = file.read()
@@ -99,7 +102,7 @@ class UDTeluguDataloader(Dataset):
     assert len(self.token_to_int) == len(self.tokens)
 
     for split in ["dev", "test", "train"]:
-      file = f'{directory_path}te_mtg-ud-{split}.conllu'
+      file = f'{FILEPATH_TO_DATA_FOLDER}/te_mtg-ud-{split}.conllu'
       content = ""
       with open(file, "r") as file:
         content = file.read()
@@ -323,10 +326,9 @@ class character_aware_nlm(nn.Module):
     max_logit, prediction_index = torch.max(logits, dim=0)
     return prediction_index
 
-# the filepaths here are from training on ada, please point it your own filepath where the data resides
-training_data = UDTeluguDataloader(split="train", directory_path="/home/yv04378/ryus_ada/users/yv04378/673/notebooks/data/")
-dev_data = UDTeluguDataloader(split="dev", directory_path="/home/yv04378/ryus_ada/users/yv04378/673/notebooks/data/")
-test_data = UDTeluguDataloader(split="test", directory_path="/home/yv04378/ryus_ada/users/yv04378/673/notebooks/data/")
+training_data = UDTeluguDataloader(split="train")
+dev_data = UDTeluguDataloader(split="dev")
+test_data = UDTeluguDataloader(split="test")
 
 SMALL = [(w, 25 * w) for w in range(1, 7)]
 LARGE = [(w, min(200, w * 50)) for w in range(1, 8)]
@@ -475,7 +477,7 @@ trained_model = character_aware_nlm(
     **model_args
 )
 trained_model.load_state_dict(params_state_dict)
-torch.save(params_state_dict, "/home/yv04378/ryus_ada/users/yv04378/673/notebooks/data/small-variant-telugu.pth")
+torch.save(params_state_dict, f"{FILEPATH_TO_FOLDER_TO_SAVE_MODEL}/small-variant-telugu.pth")
 
 ppl_on_test_data = evaluate_model(trained_model, test_data)
 
