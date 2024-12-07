@@ -12,6 +12,9 @@ import os
 import re
 import math
 
+FILEPATH_TO_DATA_FOLDER = ""
+FILEPATH_TO_FOLDER_TO_SAVE_MODEL = ""
+
 def load_checkpoint(checkpoint_filepath, model, optimizer):
   checkpoint = torch.load(checkpoint_filepath)
   model.load_state_dict(checkpoint['model_state_dict'])
@@ -241,7 +244,7 @@ class WSJDataloader(Dataset):
     self.int_to_token = {}
 
     for split in ["dev", "test", "train"]:
-      file = f'/home/yv04378/ryus_ada/users/yv04378/673/notebooks/data/wsj_{split}.txt'
+      file = f'{FILEPATH_TO_DATA_FOLDER}/wsj_{split}.txt'
       content = ""
       with open(file, "r") as file:
         content = file.read()
@@ -265,7 +268,7 @@ class WSJDataloader(Dataset):
       self.int_to_char[i] = character
 
     for split in ["dev", "test", "train"]:
-      file = f'/home/yv04378/ryus_ada/users/yv04378/673/notebooks/data/wsj_{split}.txt'
+      file = f'{FILEPATH_TO_DATA_FOLDER}/wsj_{split}.txt'
       content = ""
       with open(file, "r") as file:
         content = file.read()
@@ -432,19 +435,6 @@ def train_model(
       # Clear gradients
 
       loss.backward()
-      #dot = make_dot(logits, params=dict(model.named_parameters()), show_attrs=True, show_saved=True)
-      #display(dot)
-
-
-      '''
-      for name, param in model.named_parameters():
-        print(f"{name}: {param.grad.abs().mean()}")
-      '''
-
-      '''
-      for name, param in model.named_parameters():
-        if param.grad is None:
-          print(f"No gradient for {name}")'''
 
       # Clip gradients
       torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
@@ -481,7 +471,7 @@ print(f'ppl on dev set before training: {ppl_before_training_dev}')
 
 params_state_dict = train_model(optim=None, model_args=model_args, train_dataloader=training_data, dev_dataloader=dev_data, checkpoint=None)
 
-torch.save(params_state_dict, "/home/yv04378/ryus_ada/users/yv04378/673/notebooks/trained_models/small-variant-english.pth")
+torch.save(params_state_dict, f"{FILEPATH_TO_FOLDER_TO_SAVE_MODEL}/small-variant-english.pth")
 
 trained_model = character_aware_nlm(
     **model_args
